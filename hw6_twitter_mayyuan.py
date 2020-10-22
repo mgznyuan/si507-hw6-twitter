@@ -17,6 +17,8 @@ client_secret = secrets.TWITTER_API_SECRET
 access_token = secrets.TWITTER_ACCESS_TOKEN
 access_token_secret = secrets.TWITTER_ACCESS_TOKEN_SECRET
 
+
+
 oauth = OAuth1(client_key,
             client_secret=client_secret,
             resource_owner_key=access_token,
@@ -123,7 +125,6 @@ def make_request(baseurl, params):
         a dictionary
     '''
     #TODO Implement function
-    params={'q': hashtag}
     response = requests.get(baseurl, params=params, auth=oauth)
     data= response.json()
     return data
@@ -160,12 +161,12 @@ def make_request_with_cache(baseurl, hashtag, count):
     #TODO Implement function
     params={'q': hashtag, "count": count}
     request_key = construct_unique_key(baseurl, params)
+    CACHE_DICT= open_cache( )
     if request_key in CACHE_DICT.keys():
         print("fetching cached data")
         return CACHE_DICT[request_key]
     else:
         print("making new request")
- 
         CACHE_DICT[request_key] = make_request(baseurl, params)
         save_cache(CACHE_DICT)
         return CACHE_DICT[request_key]
@@ -192,12 +193,13 @@ def find_most_common_cooccurring_hashtag(tweet_data, hashtag_to_ignore):
 
     '''
     # TODO: Implement function 
+    taglist={}
     for value in tweet_data['statuses']:
         e = value['entities']
         tags= e['hashtags']
         for tag in tags:
-            t =tag['text']
-            if str.lower(t) == str.lower(hashtag_to_ignore) or str.lower("#"+t) == str.lower(hashtag_to_ignore):
+            t =str.lower(tag['text'])
+            if t == str.lower(hashtag_to_ignore) or str("#"+t) == str.lower(hashtag_to_ignore):
                 continue
             else:
                 taglist [t]= taglist.get(t, 0) +1
@@ -229,11 +231,8 @@ if __name__ == "__main__":
     count = 100
 
     tweet_data = make_request_with_cache(baseurl, hashtag, count)
-    taglist={}
-
-        
-        
-
+         
+      
     most_common_cooccurring_hashtag = find_most_common_cooccurring_hashtag(tweet_data, hashtag)
     print("The most commonly cooccurring hashtag with {} is {}.".format(hashtag, most_common_cooccurring_hashtag))
 
